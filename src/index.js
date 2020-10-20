@@ -140,7 +140,9 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
 
   if( username === 'ci' ) {
     if( password === process.env.ADMIN_PASSWORD ) {
-      return done( null, [] );
+      this.logger.warn( "--> IS ADMIN LOGIN" );
+      this.logger.warn( Object.keys( this.allow ).map( k => ({ workspace: k, permission: 'owner' }) ) );
+      return done( null, Object.keys( this.allow ).map( k => ({ workspace: k, permission: 'owner' }) ) );
     }
   }
 
