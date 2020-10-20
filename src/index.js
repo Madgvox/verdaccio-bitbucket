@@ -129,9 +129,9 @@ const logError = (logger, err, username) => {
  * @access public
  */
 Auth.prototype.authenticate = async function authenticate(username, password, done) {
-  logger.warn( "ADMIN_PASSWORD:", process.env.ADMIN_PASSWORD );
-  logger.warn( "USERNAME:", username );
-  logger.warn( "PASSWORD:", password );
+  this.logger.warn( "ADMIN_PASSWORD:", process.env.ADMIN_PASSWORD );
+  this.logger.warn( "USERNAME:", username );
+  this.logger.warn( "PASSWORD:", password );
 
   if( username === 'ci' ) {
     if( password === process.env.ADMIN_PASSWORD ) {
