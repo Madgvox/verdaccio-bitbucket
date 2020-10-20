@@ -19,11 +19,12 @@ Bitbucket.prototype.getPrivileges = function getPrivileges () {
     auth: { username, password }
   }).then( response => {
     const results = [];
-    
-    for( let v of response.values ) {
+
+    for( let i = 0; i < response.size; i++ ) {
+      var val = response.values[ i ];
       results.push({
-        workspace: v.workspace.slug,
-        permission: v.permission
+        workspace: val.workspace.slug,
+        permission: val.permission
       });
     }
 
