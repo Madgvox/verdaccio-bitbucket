@@ -22,7 +22,7 @@ Bitbucket.prototype.getPrivileges = function getPrivileges () {
     auth: { username, password }
   }).then( response => {
     const results = [];
-    this.logger.warn( response );
+    this.logger.warn( JSON.stringify( response ) );
 
     for( let i = 0; i < response.size; i++ ) {
       var val = response.values[ i ];
