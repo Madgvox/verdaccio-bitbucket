@@ -119,6 +119,11 @@ const logError = (logger, err, username) => {
   logger.warn(`${err.code}, user: ${username}, Bitbucket API adaptor error: ${err.message}`);
 };
 
+// we don't add users bc we source them from bitbucket, just passthrough
+Auth.prototype.add_user = function add_user( username, password, done ) {
+  return done( null, true );
+};
+
 /**
  * Performs user authentication by a given credentials
  * On success or failure executing done(err, teams) callback
@@ -129,13 +134,9 @@ const logError = (logger, err, username) => {
  * @access public
  */
 Auth.prototype.authenticate = async function authenticate(username, password, done) {
-  this.logger.warn( "ADMIN_PASSWORD:", process.env.ADMIN_PASSWORD );
-  this.logger.warn( "USERNAME:", username );
-  this.logger.warn( "PASSWORD:", password );
-
   if( username === 'ci' ) {
     if( password === process.env.ADMIN_PASSWORD ) {
-      return done( null, { isAdmin: true } );
+      return done( null, [] );
     }
   }
 
