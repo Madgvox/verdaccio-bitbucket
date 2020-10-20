@@ -150,6 +150,9 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
   );
 
   return bitbucket.getPrivileges().then(async (privileges) => {
+    this.logger.warn( 'SUCCESSFULLY GOT PRIVILEGES' );
+    this.logger.warn( privileges );
+
     privileges.filter( p => {
       if( this.allow[ p.workspace ] === undefined ) return false;
 
@@ -169,6 +172,8 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
 
     return done(null, privileges);
   }).catch((err) => {
+    this.logger.warn( 'FAILED TO GOT PRIVILEGES' );
+    this.logger.warn( err );
     logError(this.logger, err, username);
     return done(err, false);
   });
