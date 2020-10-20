@@ -132,7 +132,7 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
     try {
       let cached = await this.cache.get(username);
       if (cached) {
-        await this.cache.expire( username, this.ttl );
+        await this.cache.set( username, cached, 'EX', this.ttl );
         cached = JSON.parse(cached);
       }
       if (cached && this.bcrypt.compareSync(password, cached.password)) {
