@@ -25,10 +25,10 @@ const DEFAULT_CACHE_TTL = 24 * 60 * 60 * 7;
 function parseAllow(allow) {
   const result = {};
 
-  allow.split(/\s*,\s*/).forEach((team) => {
-    const newTeam = team.trim().match(/^(.*?)(\((.*?)\))?$/);
+  allow.split(/\s*,\s*/).forEach((workspace) => {
+    const parsed = workspace.trim().match(/^(.*?)(\((.*?)\))?$/);
 
-    result[newTeam[1]] = newTeam[3] ? newTeam[3].split('|') : [];
+    result[parsed[1]] = parsed[3] ? parsed[3].split('|') : [];
   });
 
   return result;
@@ -75,7 +75,6 @@ function Auth(config, stuff) {
   };
 
   this.allow = parseAllow(config.allow);
-  this.defaultMailDomain = config.defaultMailDomain;
   this.ttl = (config.ttl || DEFAULT_CACHE_TTL) * 1000;
   this.logger = stuff.logger;
 }
@@ -133,45 +132,42 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
     try {
       let cached = await this.cache.get(username);
       if (cached) {
+        await this.cache.expire( username, this.ttl );
         cached = JSON.parse(cached);
       }
       if (cached && this.bcrypt.compareSync(password, cached.password)) {
-        return done(null, cached.teams);
+        return done(null, cached.privileges);
       }
     } catch (err) {
       this.logger.warn('Cant get from cache', err);
     }
   }
+
   const bitbucket = new Bitbucket(
-    this.decodeUsernameToEmail(username),
+    username,
     password,
     this.logger,
   );
 
   return bitbucket.getPrivileges().then(async (privileges) => {
-    const teams = Object.keys(privileges.teams)
-      .filter((team) => {
-        if (this.allow[team] === undefined) {
-          return false;
-        }
+    privileges.filter( p => {
+      if( this.allow[ p.workspace ] === undefined ) return false;
 
-        if (!this.allow[team].length) {
-          return true;
-        }
+      if( !this.allow[ p.workspace ] ) return true;
 
-        return this.allow[team].includes(privileges.teams[team]);
-      }, this);
+      return this.allow[ p.workspace ].includes( p.permission );
+    });
 
-    if (this.cache) {
-      const hashedPassword = this.bcrypt.hashSync(password, 10);
+    if( this.cache ) {
+      const hashedPassword = this.bcrypt.hashSync( password, 10 );
       try {
-        await this.cache.set(username, JSON.stringify({ teams, password: hashedPassword }), 'EX', this.ttl);
+        await this.cache.set( username, JSON.stringify({ privileges, password: hashedPassword }), 'EX', this.ttl );
       } catch (err) {
         this.logger.warn('Cant save to cache', err);
       }
     }
 
-    return done(null, teams);
+    return done(null, privileges);
   }).catch((err) => {
     logError(this.logger, err, username);
     return done(err, false);
