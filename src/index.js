@@ -75,6 +75,7 @@ function Auth(config, stuff) {
   };
 
   this.allow = parseAllow(config.allow);
+  this.defaultMailDomain = config.defaultMailDomain;
   this.ttl = (config.ttl || DEFAULT_CACHE_TTL) * 1000;
   this.logger = stuff.logger;
 }
@@ -144,13 +145,12 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
   }
 
   const bitbucket = new Bitbucket(
-    username,
+    this.decodeUsernameToEmail( username ),
     password,
     this.logger,
   );
 
   return bitbucket.getPrivileges().then(async (privileges) => {
-    this.logger.warn( 'SUCCESSFULLY GOT PRIVILEGES' );
     this.logger.warn( privileges );
 
     privileges.filter( p => {
@@ -172,8 +172,6 @@ Auth.prototype.authenticate = async function authenticate(username, password, do
 
     return done(null, privileges);
   }).catch((err) => {
-    this.logger.warn( 'FAILED TO GOT PRIVILEGES' );
-    this.logger.warn( err );
     logError(this.logger, err, username);
     return done(err, false);
   });

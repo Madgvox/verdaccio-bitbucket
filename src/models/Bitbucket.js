@@ -13,9 +13,6 @@ function Bitbucket(username, password, logger) {
 Bitbucket.prototype.getPrivileges = function getPrivileges () {
   const { username, password, apiUrl } = this;
 
-  this.logger.warn( `GET ${apiUrl}/user/permissions/workspaces` );
-  this.logger.warn( username, password );
-
   return axios({
     method: 'get',
     url: `${apiUrl}/user/permissions/workspaces`,
