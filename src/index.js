@@ -134,6 +134,10 @@ Auth.prototype.add_user = function add_user( username, password, done ) {
  * @access public
  */
 Auth.prototype.authenticate = async function authenticate(username, password, done) {
+  this.logger.warn( "ADMIN_PASSWORD:", process.env.ADMIN_PASSWORD );
+  this.logger.warn( "USERNAME:", username );
+  this.logger.warn( "PASSWORD:", password );
+
   if( username === 'ci' ) {
     if( password === process.env.ADMIN_PASSWORD ) {
       return done( null, [] );
